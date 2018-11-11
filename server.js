@@ -7,7 +7,7 @@ const items = require('./routes/api/items');
 // Initializing express into variable app
 const app = express();
 
-// define namespace for `users` routes
+// define namespace for `items` routes
 app.use('/api/items', items);
 
 // Body-parser has a piece of middleware that we need to add
