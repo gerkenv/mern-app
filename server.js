@@ -2,8 +2,13 @@ const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 
+const items = require('./routes/api/items');
+
 // Initializing express into variable app
 const app = express();
+
+// define namespace for `users` routes
+app.use('/api/items', items);
 
 // Body-parser has a piece of middleware that we need to add
 app.use(bodyParser.json());
