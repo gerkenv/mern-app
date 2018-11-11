@@ -7,11 +7,11 @@ const items = require('./routes/api/items');
 // Initializing express into variable app
 const app = express();
 
-// define namespace for `items` routes
-app.use('/api/items', items);
-
 // Body-parser has a piece of middleware that we need to add
 app.use(bodyParser.json());
+
+// define namespace for `items` routes
+app.use('/api/items', items);
 
 // Get mongo DB URI from configuration
 const dbURI = require('./config/keys').mongoURI;
