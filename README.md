@@ -77,7 +77,7 @@ app.listen(port, () => console.log(`Server started on port ${port}`));
 ```
 Now we can start our server with `npm run server`.
 
-## Creating a Database Model
+## 1.3 Creating a Database Model
 Let's create a file `./models/Item.js`;
 We will create a model of an item of a shopping list. It should contain a name and a data, initially we will be setting it to the data of creation.
 ```js
@@ -102,3 +102,91 @@ const ItemSchema = new Schema({
 module.exports = Item = mongoose.model('item', ItemSchema);
 ```
 Now this model can be exported and used to save and load items from database.
+
+## 1.4 Creating Routes
+### 1.4.1 Creating Router Middleware
+We will create a file `./routes/api/items.js` to hold our API routes that will be returning `json` responses. All our API has to be thematically separated from each other and stored in different files. If in some case our server should render something and return back the pages then it has to be located in other folder, like `routes/pages/index.js`.
+
+Before we will create any API we have to configure our server so that if URI `host/api/item/*` is requested then our `/routes/api/items.js` file has to handle this request. Also we will set the namespace for our `items.js` file. \
+Add following lines to `server.js`.
+```js
+// import `items` route handlers
+const items = require('./routes/api/items');
+
+// Initializing express into variable app
+const app = express();
+
+// Body-parser has a piece of middleware that we need to add
+app.use(bodyParser.json());
+
+// define namespace for `items` routes
+app.use('/api/items', items);
+
+// ...
+```
+__Note:__
+Be aware that you have to apply the `items` router middleware after the `body-parser`, otherwise `items` router will be executed before `body-parser`, this way 'parsed body' property `body` will be unavailable in request `req`.
+
+### 1.4.2 Get All Items
+Let's create our first route to get all items from database. Copy this into `./routes/api/items.js`.
+```js
+const express = require('express');
+
+// get `express` router
+const router = express.Router();
+
+// get `Item` model
+const Item = require('../../models/Item');
+
+// @route  GET api/items
+// @desc   Get all items
+// @access Public
+router.get('/', (req, res) => {
+  Item.find()                       // get all items
+    .sort({ date: -1})              // sort them by date in descending order
+    .then(items => res.json(items)) // return `json` response
+});
+
+module.exports = router;
+```
+Now we can test our route with [Postman](https://www.getpostman.com/).
+Send a `GET` request to `http://localhost:5000/api/items` and you should receive an empty array as response.
+
+### 1.4.3 Create a New Item
+```js
+// @route  POST api/items
+// @desc   Create a new item
+// @access Public
+router.post('/', (req, res) => {
+  // create a new item
+  const newItem = new Item({
+    name : req.body.name,
+  });
+  // store an item into database
+  newItem.save()
+    .then(item => res.json(201, item))
+    .catch(err => res.status(500).json(err));
+});
+```
+Send a `POST` request to `http://localhost:5000/api/items` and you should receive a new brand item back.
+
+### 1.4.4 Delete an Item
+```js
+// @route  DELETE api/items/:id
+// @desc   Deletes an item
+// @access Public
+router.delete('/:id', (req, res) => {
+  // get an item
+  Item.findOneAndDelete({"_id": req.params.id})
+    .then((item) => {
+      if (!item) {
+        return res.status(404).send(item);
+      } else {
+        return res.status(200).send(item);
+      }
+    }).catch(err => res.status(500).json(err));
+});
+```
+Send a `DELETE` request to `http://localhost:5000/api/items/<some id>` and you should receive an item that was deleted.
+
+# 2 Client Side
