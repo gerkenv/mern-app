@@ -6,7 +6,7 @@ const Schema = mongoose.Schema;
 // creating new `Schema` class instance
 const ItemSchema = new Schema({
   name: {
-    type: string,
+    type: String,
     required: true
   },
   date: {
