@@ -81,5 +81,24 @@ Now we can start our server with `npm run server`.
 Let's create a file `./models/Item.js`;
 We will create a model of an item of a shopping list. It should contain a name and a data, initially we will be setting it to the data of creation.
 ```js
+const mongoose = require('mongoose');
 
+// getting class definition
+const Schema = mongoose.Schema;
+
+// creating new `Schema` class instance
+const ItemSchema = new Schema({
+  name: {
+    type: string,
+    required: true
+  },
+  date: {
+    type: Date,
+    default: Date.now
+  }
+});
+
+// export schema
+module.exports = Item = mongoose.model('item', ItemSchema);
 ```
+Now this model can be exported and used to save and load items from database.
