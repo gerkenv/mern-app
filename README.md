@@ -190,3 +190,51 @@ router.delete('/:id', (req, res) => {
 Send a `DELETE` request to `http://localhost:5000/api/items/<some id>` and you should receive an item that was deleted.
 
 # 2 Client Side
+## 2.1 Creating Frontend Template App
+Create a folder `./client`. Open it in the console, install `react` generator package called `create-react-app`.
+```
+npm i -D create-react-app
+```
+Then we will call our locally installed generator so
+```
+npx create-react-app .
+```
+to create an application template in current folder.
+This will create a separated `package.json` for our client application.
+
+## 2.2 Setting Up Proxy for Frontend
+We need to define a `proxy` in it to refer to our server much easier. If we would like to access our server from client then we have to type something like
+```js
+axios.get('http://localhost:5000/api/items);
+```
+It's fine but we can avoid this form by setting a proxz in `package.json`:
+```json
+"proxy": "http>//localhost:5000"
+```
+Then we can get the same request with
+```js
+axios.get('api/items);
+```
+
+## 2.3 Setting Up `Concurrently`
+We want to run backend and frontend apps together, this way we can start them from 2 command line tools, but we also can install `concurrently` and run them both simultaneously.
+we will create `client` script in our `package.json`.
+```js
+"client": "npm start --prefix client"
+```
+It first goes to `./client` because of `--prefix`. Also we could set it so:
+```json
+"client": "cd client && npm start"
+```
+- it it the same thing at the end.
+
+Let's set up our script for `concurrently`.
+```js
+"dev": "concurrently \"npm run server\" \"npm run client\""
+```
+So now we can run backend or frontend app separately or together.
+
+Also you could set up small script to install all of your client dependencies.
+```js
+"client-install"
+```
