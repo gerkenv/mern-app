@@ -233,14 +233,17 @@ Let's set up our script for `concurrently`.
 "dev": "concurrently \"npm run server\" \"npm run client\""
 ```
 So now we can run backend or frontend app separately or together.
+You can try out to run both apps with `npm run dev`.
 
 Also you could set up small script to install all of your client dependencies.
 ```js
 "client-install"
 ```
 
-## 2.4 Additional Dependencies For Client
+## 2.4 Setting Up Bootstrap / Reactstrap
+## 2.4.1 Additional Dependencies For Client
 ```
+cd client
 yarn add bootstrap reactstrap uuid
 ```
 * bootstrap - UI library
@@ -248,3 +251,92 @@ yarn add bootstrap reactstrap uuid
 * uuid - generate random ids (we will build app with static data first)
 * react-transition-group -
 
+### 2.4.2 Injecting Bootstrap
+In `app.js` we will add line
+```js
+import 'bootstrap/dist/css/bootstrap.min.css'
+```
+Now if we reload the client page, then you will see that font has changed, it means that bootstrap is active now.
+
+### 2.4.3 Building Navbar with Reactstrap
+Create `./client/src/component/Navbar.js`.
+
+Go to https://reactstrap.github.io/components/. Check out react syntax.
+Import all required components for a navbar:
+```js
+import React, { Component } from 'react';
+import {
+  Collapse,
+  Navbar,
+  NavbarToggler,
+  NavbarBrand,
+  Nav,
+  NavItem,
+  NavLink,
+  Container
+} from 'reactstrap';
+```
+
+#### 2.4.3.1 `this` and Arrow Function In React
+If you define a function `toggle` in your component, then you have to bind it to your component in the constructor like this
+```js
+export default class Navbar extends Component {
+  constructor(props) {
+    super(props);
+    this.toggle = this.toggle.bing(this);
+    this.state = {
+      isOpen: false
+    };
+  }
+  toggle() {
+    this.setState({
+      isOpen: !this.state.isOpen
+    });
+  }
+}
+```
+to avoid the replacement of context (`this`) when you're adding an event listener.
+```html
+<NavbarToggler onClick={this.toggle} />
+```
+Full example is [here](https://reactstrap.github.io/components/navbar/).
+
+There is a way to make it simpler, arrow function binds itself to the context of parent scope.
+So code below is equivalent to code above.
+```js
+export default class Navbar extends Component {
+constructor(props) {
+    super(props);
+    this.state = {
+      isOpen: false
+    };
+  }
+  toggle = () => {
+    this.setState({
+      isOpen: !this.state.isOpen
+    });
+  }
+}
+```
+Okay, now we create a `render` method to render a navbar using all our components;
+```js
+  render() {
+    return (
+      <div>
+        <Navbar color="dark" dark expand="sm" className="mb-5">
+          <Container>
+            <NavbarBrand href="/">Shopping List</NavbarBrand>
+            <NavbarToggler onClick={this.toggle} />
+            <Collapse isOpen={this.state.isOpen} navbar>
+              <Nav className="ml-auto" navbar>
+                <NavItem>
+                  <NavLink href="https://reactstrap.github.io/components/navbar/">Reactstrap/Navbar</NavLink>
+                </NavItem>
+              </Nav>
+            </Collapse>
+          </Container>
+        </Navbar>
+      </div>
+    )
+  }
+```
