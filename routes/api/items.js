@@ -12,7 +12,7 @@ const Item = require('../../models/Item');
 router.get('/', (req, res) => {
   Item.find()           // get all items
     .sort({ date: -1})  // sort them by date in descending order
-    .then(items => res.json(200, items)) // return `json` response
+    .then(items => res.status(200).json(items)) // return `json` response
 });
 
 // @route  POST api/items
