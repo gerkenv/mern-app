@@ -21,8 +21,6 @@
   },
   "devDependencies": {
     "create-react-app": "^2.1.1",
-    "eslint": "^5.9.0",
-    "eslint-plugin-react": "^7.11.1",
     "nodemon": "^1.18.6"
   }
 }
