@@ -238,3 +238,13 @@ Also you could set up small script to install all of your client dependencies.
 ```js
 "client-install"
 ```
+
+## 2.4 Additional Dependencies For Client
+```
+yarn add bootstrap reactstrap uuid
+```
+* bootstrap - UI library
+* reactstrap - allows us to use bootstrap components as react components
+* uuid - generate random ids (we will build app with static data first)
+* react-transition-group -
+
