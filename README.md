@@ -340,3 +340,159 @@ Okay, now we create a `render` method to render a navbar using all our component
     )
   }
 ```
+
+# 3 Creating a `ShoppingList` Component
+Make a file `./client/src/components/ShoppingList.js`.
+```js
+import React, { Component } from 'react';
+import { Container, ListGroup, ListGroupItem, Button } from 'reactstrap';
+import { CSSTransition, TransitionGroup } from 'react-transition-group';
+import uuid from 'uuid';
+
+export default class ShoppingList extends Component {
+  state = {
+    items: [
+      { id: uuid(), name: 'Bananas' },
+      { id: uuid(), name: 'Lemon' },
+      { id: uuid(), name: 'Pineapple' },
+      { id: uuid(), name: 'Paprika' },
+    ]
+  }
+
+  render() {
+    const { items } = this.state;
+
+    return (
+      <Container>
+        <Button
+        color="dark"
+        style={{marginBottom: "2rem"}}
+        onClick={() => {
+          const name = prompt('Enter Item');
+          if (name) {
+            this.setState(state => ({
+              items: [...state.items, {id: uuid(), name}]
+            }));
+          }
+        }}
+        >
+          Add Item
+        </Button>
+      </Container>
+    );
+  }
+}
+```
+Now we will add this component to our `App.js`.
+```js
+import ShoppingList from './components/ShoppingList'
+
+class App extends Component {
+  render() {
+    return (
+      <div className="App">
+      <AppNavbar />
+      <ShoppingList />
+      <h1>Hello</h1>
+      </div>
+    );
+  }
+}
+```
+Now if you have `React Developer Tools` you can add items in browser and see updated state.
+
+## 3.1 CCS Transition
+Now we will create our list with items in `ShoppingList` component.
+```js
+render() {
+    const { items } = this.state;
+
+    return (
+      <Container>
+        <Button
+        color="dark"
+        style={{marginBottom: "2rem"}}
+        onClick={() => {
+          const name = prompt('Enter Item');
+          if (name) {
+            this.setState(state => ({
+              items: [...state.items, {id: uuid(), name}]
+            }));
+          }
+        }}
+        >
+          Add Item
+        </Button>
+        <ListGroup>
+          <TransitionGroup className="shopping-list">
+            {items.map(({id, name}) => (
+              <CSSTransition key={id} timeout={10000} classNames="fade">
+                <ListGroupItem>
+                  <Button
+                  className="remove-btn"
+                  color="danger"
+                  size="sm"
+                  onClick={() => {
+                    this.setState(state => ({
+                      items: state.items.filter(item => item.id != id)
+                    }))
+                  }}
+                  >
+                    &times;
+                  </Button>
+                  {name}
+                </ListGroupItem>
+              </CSSTransition>
+            ))}
+          </TransitionGroup>
+        </ListGroup>
+
+      </Container>
+    );
+  }
+```
+`CSSTransition` component modifying class attributes of an element in following way:
+* When element appears (it is created).
+  *  At the beginning (time == 0) it receives class `fade-enter`
+  *  In process further (time ~ [1, timeout - 1]) it receives classes `fade-enter fade-enter-active`
+     Here `fade-enter-active` overrides `fade-enter`.
+  *  At the end of creation (time == timeout) it receives class `fade-enter-done`
+* When element is deleted
+  * Time = 0 --> `fade-exit`
+  * Time ~ [1, timeout -1] --> `fade-exit fade-exit-active`
+    Here `fade-exit-active` overrides `fade-exit`.
+  * Time = timeout --> `fade-exit-done`
+
+So we have to define those classes in any `.css` file and connect them to our app.
+We will create `ShoppingList.css` in our `components` folder.
+```css
+.remove-btn {
+    margin-right: 0.5rem;
+}
+
+.fade-enter {
+    opacity: 0.01;
+}
+
+.fade-enter-active {
+    opacity: 1;
+    transition: opacity 10000ms ease-in;
+}
+
+.fade-exit {
+    opacity: 1;
+}
+
+.fade-exit-active {
+    opacity: 0.01;
+    transition: opacity 10000ms ease-in;
+}
+```
+Additional links:
+* http://reactcommunity.org/react-transition-group/css-transition/
+* https://www.w3schools.com/css/css3_transitions.asp
+
+So now we should import our new `.css` file into our component and elements on the page should fade in and out.
+```js
+import './ShoppingList.css';
+```
