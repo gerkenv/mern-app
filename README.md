@@ -496,3 +496,13 @@ So now we should import our new `.css` file into our component and elements on t
 ```js
 import './ShoppingList.css';
 ```
+
+# 4 Implementing Redux
+We need to install some dependencies from the `client` folder.
+```
+yarn add redux react-redux redux-thunk
+```
+* redux - redux standalone library
+* redux-react - binding named thing together
+* redux-thunk - different way to dispatch from our action to our reducer (for asynchronous actions)
+
