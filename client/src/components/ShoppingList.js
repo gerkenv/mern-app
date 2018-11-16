@@ -44,7 +44,7 @@ export default class ShoppingList extends Component {
                   size="sm"
                   onClick={() => {
                     this.setState(state => ({
-                      items: state.items.filter(item => item.id != id)
+                      items: state.items.filter(item => item.id !== id)
                     }))
                   }}
                   >
