@@ -506,3 +506,168 @@ yarn add redux react-redux redux-thunk
 * redux-react - binding named thing together
 * redux-thunk - different way to dispatch from our action to our reducer (for asynchronous actions)
 
+## 4.1 Store
+A store holds the whole state tree of your application. The only way to change the state inside it is to dispatch an action on it.
+
+Let's first create a store - `./.client/src/store.js`.
+```js
+import { createStore, applyMiddleware, compose } from 'redux';
+import thunk from 'redux-thunk';
+import rootReducer from './reducers'
+// equivalent to
+// import rootReducer from './reducers/index.js'
+
+const initialState = {};
+
+const middleware = [thunk];
+
+const store = createStore(
+  rootReducer,
+  initialState,
+  compose(
+    applyMiddleware(...middleware),
+    // following line is required for `Redux Dev Tools`
+    window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__()
+  )
+);
+
+export default store;
+```
+
+In order to integrate this store in our application we have to go to `App.js` and bring in the `Provider`.
+```js
+import React, { Component } from 'react';
+import AppNavbar from './components/AppNavbar'
+import ShoppingList from './components/ShoppingList'
+
+import { Provider } from 'react-redux';
+import store from './store'
+
+import 'bootstrap/dist/css/bootstrap.min.css'
+import './App.css';
+
+class App extends Component {
+  render() {
+    return (
+      <Provider store={store}>
+      <div className="App">
+        <AppNavbar />
+        <ShoppingList />
+      </div>
+      </Provider>
+    );
+  }
+}
+
+export default App;
+```
+In order to use redux in our components, in order to get stuff from the state and out it into component properties we have to wrap everything into `Provider`.
+Now we are able to access stuff from our state, from our components, so we can share state.
+
+## 4.2 Reducers
+We will create a `root reducer`, we will create folder called `reducers`, and our `root reducer` will defined in file called `index.js`. `Root reducer` is basically only unites all reducers and binds them to specific store properties. Since currently we have only shopping items then we will define the `itemReducer`, but if we would have a users section, then we would need a `userReducer` and so on. Each reducer is responsible for one particular property of our store.
+
+So let's create `./client/src/reducers/index.js`.
+Why `index.js`? Why not `rootReducer.js`? Because then we can import it with
+```js
+import rootReducer from '/reducers';
+// and it will be absolutely the same as
+import rootReducer from '/reducers/index';
+```
+So coming back to our new `index.js`
+```js
+import { combineReducers } from 'redux';
+import itemReducer from './itemReducer';
+
+export default combineReducers({
+  item: itemReducer
+});
+```
+`combineReducers` is exactly the function that binds certain reducer to certain store property.
+
+Now we will create the `./client/src/reducers/itemReducer`.
+This reducer will be managing such actions as `ADD_ITEM`, `GET_ITEMS`, `REMOVE_ITEM`, etc.
+Depending on the action it will be modifying our store.
+
+Of course, if we take our backend in the chain, then the sequence is defined as follows:
+1. Some component dispatches an action.
+2. Reducer receives an action and send request to our backend API.
+3. Reducer receives response from our backend server and modifies a store.
+4. When the store gets updated it triggers re-rendering of our `Provider` component.
+5. Smart components get the data from the store which is saved as `prop` of `Provider`.
+6. Dumb components receives the data to display from smart components.
+
+Our new `itemReducer`.
+```js
+import uuid from 'uuid';
+
+const initialState = {
+  items: [
+    { id: uuid(), name: 'Bananas' },
+    { id: uuid(), name: 'Lemon' },
+    { id: uuid(), name: 'Pineapple' },
+    { id: uuid(), name: 'Paprika' }
+  ]
+};
+```
+
+In our reducers we need to evaluate an actions type, so we need too create actions types.
+
+## 4.3 Actions
+So for any action like `GET_ITEMS`, `ADD_ITEM`, `DELETE_ITEM` we have to define types.
+Let's create their definition in `./client/src/actions/types.js`.
+```js
+export const GET_ITEMS = 'GET_ITEMS';
+export const ADD_ITEMS = 'ADD_ITEM';
+export const DELETE_ITEMS = 'DELETE_ITEM';
+```
+Sometime thes `types` also called `constants` because they are supposed to be immutable.
+
+## 4.4 Binding Actions With Reducer
+Now we can unclude our type definition in our `itemReducer` and define how the `store.item` should change on a certain actions.
+```js
+import uuid from 'uuid';
+import { GET_ITEMS, ADD_ITEM, DELETE_ITEM } from '../actions/types';
+
+const initialState = {
+  items: [
+    { id: uuid(), name: 'Bananas' },
+    { id: uuid(), name: 'Lemon' },
+    { id: uuid(), name: 'Pineapple' },
+    { id: uuid(), name: 'Paprika' }
+  ]
+};
+
+export default function(state = initialState, action) {
+  switch(action.type) {
+    case GET_ITEMS:
+      return {
+        ...state
+      };
+    default:
+      return state;
+  }
+}
+```
+
+## 4.5 Action Definition
+Now we have to define action that can be used in our `ShoppingList` component. Remember that we have already defined actin types. We will use them.
+```js
+import { GET_ITEMS, ADD_ITEM, DELETE_ITEM } from '../actions/types';
+
+export const getItem = () => {
+  // will be returned to our `itemReducer`
+  return {
+    type: GET_ITEMS,
+    // `payload` is not required in this action
+  }
+}
+```
+
+## 4.6 Connecting Action with Component
+Now our initial state is set in our `itemReducer`, so we do not need to set in our `ShoppingList` component.
+We will remove the part, where we set our initial state.
+```js
+
+
+```
