@@ -613,7 +613,7 @@ const initialState = {
 
 In our reducers we need to evaluate an actions type, so we need too create actions types.
 
-## 4.3 Actions
+## 4.3 Action Types
 So for any action like `GET_ITEMS`, `ADD_ITEM`, `DELETE_ITEM` we have to define types.
 Let's create their definition in `./client/src/actions/types.js`.
 ```js
@@ -664,10 +664,81 @@ export const getItem = () => {
 }
 ```
 
-## 4.6 Connecting Action with Component
+## 4.6 Connecting Component with Redux
 Now our initial state is set in our `itemReducer`, so we do not need to set in our `ShoppingList` component.
 We will remove the part, where we set our initial state.
-```js
+```diff
+ export default class ShoppingList extends Component {
+-  state = {
+-    items: [
+-      { id: uuid(), name: 'Bananas' },
+-      { id: uuid(), name: 'Lemon' },
+-      { id: uuid(), name: 'Pineapple' },
+-      { id: uuid(), name: 'Paprika' },
+-    ]
+-  }
 
-
+   render() {
 ```
+So in order to get our state into component we have to import `connect` function
+```js
+import { connect } from 'react-redux';
+import { getItems } from '../actions/itemActions';
+```
+And we have to export our component differently:
+```diff
+- export default ShoppingList;
++ export default connect(mapStateToProps, {getItems})(ShoppingList);
+```
+This will connect our state (store) and our actions with `ShoppingList` component.
+* `mapStateToProps` - is taking a store and mapping a store property required by component into component `props`. This way we will able to refer it our component so `this.props.items`;
+* { getItems, ...} - object containing actions required for this component will be also accesible as component `props`, like `this.props.getItems()`.
+
+Let's define a function that will be slicing our store.
+```js
+const mapStateToProps = (state) => ({
+  item: state.item
+});
+```
+It returns an object that holds a reference to the property `items` of the `Provider` `store` (state). Remember that we have associated exactly the `items` property with `itemReducer` in our root reducer in `./client/src/reducers/index.js`. And `itemReducer` can handle `getItems` action.
+
+Last thing we need to add redux `PropTypes` in our `ShoppingList` component.
+```js
+import PropTypes from 'prop-types';
+```
+And the underneath our class we add following lines
+```js
+ShoppingList.propTypes = {
+  getItems: PropTypes.func.isRequired, // action
+  item: PropTypes.object.isRequired    // state (part of the store)
+}
+```
+Because we want to access our actions in component through `props`. And we want to set the type `func` to it because the whole point of `PropTypes` - simply showing the type of property.
+
+The last thing that is left is to call `getItem`.
+* then it will send / dispatch action `{ type: GET_ITEMS }` to the reducers (`itemAction.js`).
+* what should basically return unchanged state `{...state}`.
+* Then `mapStateToProps` will get the updated `state.items` and save it as component `props`.
+
+So the right place to call `getItems` is a react component life cycle function `componentDidMount`.
+```js
+class ShoppingList extends Component {
+
+  componentDidMount() {
+    this.props.getItems();
+  }
+```
+The `componentDidMount()` method runs after the component output has been rendered to the DOM.
+This is a good place to set up an event listener or make an action that should happen only once.
+__note__:
+If you have set up an event listener you should unbind it in `componentWillUnmount()`. This method is called when a component is being removed from the DOM.
+
+Now we have to replace the way we get our `items` in component.
+```diff
+   render() {
+-    const { items } = this.state;
++    const { items } = this.props.item;
+```
+Because now the `item` slice of store it is mapped to `this.props.item` in function `mapStateToProps` and our reducer initially sets the array called `items` to `item` slice of store, so the full path is to shopping list items is `this.props.item.items`. And we are using ES6 destructing to get it.
+
+So now our state lives in `redux` store and not in component's own state.
