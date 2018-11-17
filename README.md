@@ -742,3 +742,7 @@ Now we have to replace the way we get our `items` in component.
 Because now the `item` slice of store it is mapped to `this.props.item` in function `mapStateToProps` and our reducer initially sets the array called `items` to `item` slice of store, so the full path is to shopping list items is `this.props.item.items`. And we are using ES6 destructing to get it.
 
 So now our state lives in `redux` store and not in component's own state.
+
+Some additional information:
+* https://www.sohamkamani.com/blog/2017/03/31/react-redux-connect-explained/
+
