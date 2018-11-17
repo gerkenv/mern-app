@@ -1,6 +1,6 @@
 import { GET_ITEMS, ADD_ITEM, DELETE_ITEM } from '../actions/types';
 
-export const getItem = () => {
+export const getItems = () => {
   // will be returned to our `itemReducer`
   return {
     type: GET_ITEMS,
