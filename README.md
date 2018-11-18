@@ -1051,3 +1051,91 @@ export default connect(mapStateToProps, {addItem})(ItemModal);
 ```
 
 So right now the application should work completely, the only thing is missing is a backend connection.
+
+# 5 Binding Client With Server
+## 5.1 Replacing Static Data And Adding `Loading` Flag
+First of all we will remove the static data from `itemReducer`.
+```diff
+-  const initialState = {
+-    items: [
+-      { id: uuid(), name: 'Bananas' },
+-      { id: uuid(), name: 'Lemon' },
+-      { id: uuid(), name: 'Pineapple' },
+-      { id: uuid(), name: 'Paprika' }
+-    ]
+-  };
++ const initialState = {
++   // shopping items
++   items: [],
++   // loading flag
++   // `true` when data is pulled from server
++   // `false` when data is received
++   loading: false
++ };
+```
+We will create the action type `ITEMS_LOADING` in `types.js`.
+```js
+export const ITEMS_LOADING = 'ITEMS_LOADING';
+```
+we are importing this action type in `itemReducer`
+```js
+import { GET_ITEMS, ADD_ITEM, DELETE_ITEM, ITEMS_LOADING } from '../actions/types';
+```
+and creating a handler for it.
+```js
+    case ITEMS_LOADING:
+      return {
+        ...state,
+        loading: true
+      }
+```
+Then we will create an action for our new action type in `itemActions`. We will import it
+```js
+import { GET_ITEMS, ADD_ITEM, DELETE_ITEM, ITEMS_LOADING } from '../actions/types';
+```
+and define the action
+```js
+export const setItemsLoading = () => {
+  return {
+    type: ITEMS_LOADING
+  }
+}
+```
+In order to perform an asynchronous request we will need a package called `axios` for our client, so
+```
+cd client
+npm install axios
+```
+or
+```
+yarn add axios
+```
+Depending on your `lock` file.
+
+Then we need to modify our `getItems` action
+```js
+export const getItems = () => dispatch => {
+  // dispatch (emit) an action (an event)
+  dispatch(setItemsLoading());
+  // send request to server to get all items
+  // we can use links without `host` name because we set `proxy` to `host` in our `package.json`
+  axios.get('/api/items')
+    .then(res => {
+      // dispatch (emit) an action (an event)
+      dispatch({
+        type: GET_ITEMS,
+        payload: res.items
+      })
+    })
+}
+```
+Then we will modify our reducer for this action type.
+```js
+    case GET_ITEMS:
+      return {
+        ...state,
+        items: action.payload.items,
+        loading: false
+      };
+```
+Now we should completely overwrite client items with the ones saved on server. Also we are setting `loading` flag back to `false`, because previously it was set to `true` in `ITEMS_LOADING`, that action type is dispatched by the same action `getItems`.
