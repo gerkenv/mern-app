@@ -1,21 +1,22 @@
-import uuid from 'uuid';
-import { GET_ITEMS, ADD_ITEM, DELETE_ITEM } from '../actions/types';
+import { GET_ITEMS, ADD_ITEM, DELETE_ITEM, ITEMS_LOADING } from '../actions/types';
 
 const initialState = {
-  items: [
-    { id: uuid(), name: 'Bananas' },
-    { id: uuid(), name: 'Lemon' },
-    { id: uuid(), name: 'Pineapple' },
-    { id: uuid(), name: 'Paprika' }
-  ]
+  // shopping items
+  items: [],
+  // loading flag
+  // `true` when data is pulled from server
+  // `false` when data is received
+  loading: false
 };
 
-// `state` argument here is actually a complete store, but since it is the `itemReducer` then we have to make changes only in a slice of the store called `item`. Because this reducer is associated with the `item` slice of the store. It is defined in `reducers/index.js`.
+// `state` argument here is not complete store but only a slice of it (single property) called `item`. Because this reducer is associated with the `item` property in root reducer in file `reducers/index.js`.
 export default function(state = initialState, action) {
   switch(action.type) {
     case GET_ITEMS:
       return {
-        ...state
+        ...state,
+        items: action.payload.items,
+        loading: false
       };
     case DELETE_ITEM:
       return {
@@ -26,6 +27,11 @@ export default function(state = initialState, action) {
       return {
         ...state,
         items: [action.payload.item, ...state.items]
+      }
+    case ITEMS_LOADING:
+      return {
+        ...state,
+        loading: true
       }
     default:
       return state;
