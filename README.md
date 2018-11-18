@@ -746,3 +746,308 @@ So now our state lives in `redux` store and not in component's own state.
 Some additional information:
 * https://www.sohamkamani.com/blog/2017/03/31/react-redux-connect-explained/
 
+## 4.7 Connecting `Delete Item` Action with `ShoppingList` Component
+First let's remove `uuid` from `ShoppingLIst.js`, it is now used in `itemReducer` only.
+And import new action that we will create soon called `deleteItem`.
+```diff
+ import { CSSTransition, TransitionGroup } from 'react-transition-group';
+-import uuid from 'uuid';
+ import './ShoppingList.css';
+ import { connect } from 'react-redux';
+-import { getItems } from '../actions/itemActions';
++import { getItems, deleteItem } from '../actions/itemActions';
+ import PropTypes from 'prop-types';
+```
+Do not forget that we have to connect every component action with redux
+```diff
+-export default connect(mapStateToProps, {getItems})(ShoppingList);
++export default connect(
++  mapStateToProps,
++  {
++    getItems,
++    deleteItem
++  }
++)(ShoppingList);
+```
+So it will accessible to us with `this.props.deleteItem`.
+
+Then let's move to `itemActions.js` and create our new action.
+```js
+export const deleteItem = (id) => {
+  return {
+    type: DELETE_ITEM,
+    payload: {
+      id
+    }
+  };
+}
+```
+To delete an item, we have to somehow differentiate it from other items, so we will send along `id` of `item` within the `payload`, it is the classic rule, to send all required information in the `payload`.
+
+Now we are moving further to our `itemReducer` and here we have to actually modify our slice of the store.
+```js
+    case DELETE_ITEM:
+      return {
+        ...state,
+        items: state.items.filter(item => item.id !== action.payload.id)
+      };
+```
+
+Since all redux connections are completed, we will modify the way our component deletes an item.
+```diff
+                   <Button
+                   className="remove-btn"
+                   color="danger"
+                   size="sm"
+-                  onClick={() => {
+-                    this.setState(state => ({
+-                      items: state.items.filter(item => item.id !== id)
+-                    }))
+-                  }}
++                  onClick={this.onDeleteClick.bind(this, id)}
+                   >
+                     &times;
+                   </Button>
+```
+We will define `onDeleteClick` in the component.
+```js
+  onDeleteClick = (id) => {
+    this.props.deleteItem(id);
+  }
+```
+
+The we need to remove the `Add item` button, because later it will be a separate component.
+```diff
+       <Container>
+-        <Button
+-        color="dark"
+-        style={{marginBottom: "2rem"}}
+-        onClick={() => {
+-          const name = prompt('Enter Item');
+-          if (name) {
+-            this.setState(state => ({
+-              items: [...state.items, {id: uuid(), name}]
+-            }));
+-          }
+-        }}
+-        >
+-          Add Item
+-        </Button>
+         <ListGroup>
+```
+
+At this point you should be able to delete an item using redux chain.
+
+## 4.8 Creating `Item Modal`
+We will make a small bootstrap modal in order to add a new item.
+What is a modal:
+* http://getbootstrap.com/docs/4.1/components/modal/
+* https://reactstrap.github.io/components/modals/
+
+Add a file `./client/src/components/ItemModal.js`.
+```js
+import React, { Component } from 'react';
+
+import {
+  Button,
+  Modal,
+  ModalHeader,
+  ModalBody,
+  Form,
+  FormGroup,
+  Label,
+  Input
+} from 'reactstrap';
+import { connect } from 'react-redux';
+import { addItem } from '../actions/itemActions';
+
+
+class ItemModal extends React.Component {
+  state = {
+    // defines if modal is visible
+    modal: false,
+    // property for a new item name
+    name: ''
+  }
+
+  // toggle visibility
+  toggle = () => {
+    this.setState({
+      modal: !this.state.modal
+    });
+  }
+
+  // save a new value of input in state
+  onChange = (e) => {
+    this.setState({ [e.target.name]: e.target.value })
+  }
+
+  render() {
+    return (
+      <div>
+        <Button
+          color="dark"
+          style={{marginBottom: "2rem"}}
+          onClick={this.toggle}
+        >
+          Add Item
+        </Button>
+
+        <Modal
+          isOpen={this.state.modal}
+          toggle={this.toggle}
+        >
+          <ModalHeader toggle={this.toggle}>
+            Add an Item to Shopping List
+          </ModalHeader>
+          <ModalBody>
+            <Form onSubmit={this.onSubmit}>
+              <FormGroup>
+                <Label for="item">Item</Label>
+                <Input
+                  type="text"
+                  name="name"
+                  id="item"
+                  placeholder="Add a new item to buy"
+                  onChange={this.onChange}
+                />
+              </FormGroup>
+            </Form>
+          </ModalBody>
+        </Modal>
+      </div>
+    )
+  }
+
+}
+
+export default connect()(ItemModal);
+```
+
+We add the `ItemModal` to `App.js` to see if it works correctly.
+```diff
+  import React, { Component } from 'react';
+  import AppNavbar from './components/AppNavbar';
+  import ShoppingList from './components/ShoppingList';
++ import ItemModal from './components/ItemModal';
++ import { Container } from "reactstrap";
+
+  import { Provider } from 'react-redux';
+  import store from './store';
+
+  import 'bootstrap/dist/css/bootstrap.min.css';
+  import './App.css';
+
+  class App extends Component {
+    render() {
+      return (
+        <Provider store={store}>
+          <div className="App">
+            <AppNavbar />
+-           <ShoppingList />
++           <Container>
++             <ItemModal />
++             <ShoppingList />
++           </Container>
+          </div>
+        </Provider>
+      );
+    }
+  }
+
+  export default App;
+```
+
+Since we are wrapping `ItemModal` and `ShoppingList` into `Container` at `App.js` then we do not need `Container` in `ShoppingList.js` anymore.
+```diff
++import { ListGroup, ListGroupItem, Button } from 'reactstrap';
+-import { Container, ListGroup, ListGroupItem, Button } from 'reactstrap';
+```
+
+```diff
+  render() {
+    const { items } = this.props.item;
+
+    return (
+-     <Container>
+      <ListGroup>
+        <TransitionGroup className="shopping-list">
+          {items.map(({id, name}) => (
+            <CSSTransition key={id} timeout={1000} classNames="fade">
+              <ListGroupItem>
+                <Button
+                className="remove-btn"
+                color="danger"
+                size="sm"
+                onClick={this.onDeleteClick.bind(this, id)}
+                >
+                  &times;
+                </Button>
+                {name}
+              </ListGroupItem>
+            </CSSTransition>
+          ))}
+        </TransitionGroup>
+      </ListGroup>
+-     </Container>
+    );
+  }
+```
+
+## 4.9 Connecting `ItemModal` With `Add Item` Action
+We will make a button to add an item in `ItemModal.js`.
+```diff
+          <ModalBody>
+            <Form onSubmit={this.onSubmit}>
+              <FormGroup>
+                <Label for="item">Item</Label>
+                <Input
+                  type="text"
+                  name="name"
+                  id="item"
+                  placeholder="Add a new item to buy"
+                  onChange={this.onChange}
+                />
++               <Button
++                 color="dark"
++                 style={{marginTop: "2rem"}} block
++               >
++                 Add Item
++               </Button>
+              </FormGroup>
+            </Form>
+          </ModalBody>
+```
+So now our button is there but it does not change our state in any way, so let's fix it.
+
+We need to define `addItem` action in `itemActions.js`.
+```js
+export const addItem = (item) => {
+  return {
+    type: ADD_ITEM,
+    payload: {
+      item
+    }
+  };
+}
+```
+
+Then we have to define, what should happen in `itemReducer.js`.
+```js
+    case ADD_ITEM:
+      return {
+        ...state,
+        items: [action.payload.item, ...state.items]
+      }
+```
+We also need to `connect` our `ItemModal` properly including `addItem` action.
+Go to `ItemModal.js`.
+```js
+const mapStateToProps = (state) => ({
+  item: state.item
+});
+
+export default connect(mapStateToProps, {addItem})(ItemModal);
+```
+
+So right now the application should work completely, the only thing is missing is a backend connection.
