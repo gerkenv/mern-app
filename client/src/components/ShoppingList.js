@@ -48,9 +48,13 @@ ShoppingList.propTypes = {
   item: PropTypes.object.isRequired
 }
 
-const mapStateToProps = (state) => ({
-  item: state.item
-});
+// `state` argument here is a complete store. In this component we need only a slice of it. Single property called `item`.
+const mapStateToProps = (state) => {
+  // console.log({completeStore: state})
+  return ({
+    item: state.item
+  })
+};
 
 export default connect(
   mapStateToProps,
