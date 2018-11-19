@@ -1139,3 +1139,65 @@ Then we will modify our reducer for this action type.
       };
 ```
 Now we should completely overwrite client items with the ones saved on server. Also we are setting `loading` flag back to `false`, because previously it was set to `true` in `ITEMS_LOADING`, that action type is dispatched by the same action `getItems`.
+
+Okay, now we are getting the data from our backend, but we cannot modify it, so let's fix it by binding the `addItem` and `deleteItem` to api.
+
+Go to `itemAction.js` and replace the `addItem` with:
+```js
+export const addItem = (item) => (dispatch) => {
+  axios.post('/api/items', item).then(res => {
+    // dispatch (emit) an action (an event)
+    dispatch({
+      type: ADD_ITEM,
+      payload: {
+        item: res.data
+      }
+    })
+  });
+}
+```
+Also we need to get rid of random `id` in `ItemModal.js`, because now `_id` is created by MongoDB.
+```diff
+onSubmit = (e) => {
+  // prevent default event behavior & stop propagation
+  e.preventDefault();
+
+  // create a new item
+  const newItem = {
+-   // get random id
+-   id: uuid(),
+    // get item name from `input` form
+    name: this.state.name
+  }
+```
+and we do not need this import anymore.
+```diff
+- import uuid from 'uuid';
+```
+
+Then all we need to do is to bind `deleteItem` with a server.
+```js
+export const deleteItem = (id) => (dispatch) => {
+  // send request to delete an item
+  axios.delete(`/api/items/${id}`).then(res => {
+    // dispatch (emit) an action (an event)
+    dispatch({
+      type: DELETE_ITEM,
+      payload: {
+        id
+      }
+    })
+  });
+}
+```
+And since our items from database have `_id` instead of `id` then we need to change the `itemReducer` a bit:
+```diff
+    case DELETE_ITEM:
+      return {
+        ...state,
+-       items: state.items.filter(item => item.id !== action.payload.id)
++       items: state.items.filter(item => item._id !== action.payload.id)
+      };
+```
+
+Now everything should be working synchronously with database.
