@@ -9,35 +9,44 @@ export const getItems = () => dispatch => {
   dispatch(setItemsLoading());
   // send request to server to get all items
   // we can use links without `host` name because we set `proxy` to `host` in our `package.json`
-  axios.get('/api/items')
-    .then(res => {
-      console.log({res});
-      // dispatch (emit) an action (an event)
-      dispatch({
-        type: GET_ITEMS,
-        payload: {
-          items: res.data
-        }
-      })
+  axios.get('/api/items').then(res => {
+    console.log({res});
+    // dispatch (emit) an action (an event)
+    dispatch({
+      type: GET_ITEMS,
+      payload: {
+        items: res.data
+      }
     })
+  });
 }
 
-export const deleteItem = (id) => {
-  return {
-    type: DELETE_ITEM,
-    payload: {
-      id
-    }
-  };
+export const deleteItem = (id) => (dispatch) => {
+  // send request to delete an item
+  axios.delete(`/api/items/${id}`).then(res => {
+    console.log({res});
+    // dispatch (emit) an action (an event)
+    dispatch({
+      type: DELETE_ITEM,
+      payload: {
+        id
+      }
+    })
+  });
 }
 
-export const addItem = (item) => {
-  return {
-    type: ADD_ITEM,
-    payload: {
-      item
-    }
-  };
+export const addItem = (item) => (dispatch) => {
+  // send request to add an item
+  axios.post('/api/items', item).then(res => {
+    console.log({res});
+    // dispatch (emit) an action (an event)
+    dispatch({
+      type: ADD_ITEM,
+      payload: {
+        item: res.data
+      }
+    })
+  });
 }
 
 export const setItemsLoading = () => {
