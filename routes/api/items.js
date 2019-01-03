@@ -25,7 +25,7 @@ router.post('/', (req, res) => {
   });
   // store an item into database
   newItem.save()
-    .then(item => res.json(201, item))
+    .then(item => res.status(201).json(item))
     .catch(err => res.status(500).json(err));
 });
 
