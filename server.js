@@ -1,6 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
+const path = require('path');
 
 const items = require('./routes/api/items');
 
@@ -12,6 +13,19 @@ app.use(bodyParser.json());
 
 // define namespace for `items` routes
 app.use('/api/items', items);
+
+// serve static folder / asset if in production
+if (process.env.NODE_ENV === 'production') {
+  // Set static folder
+  app.use(express.static(path.join(__dirname, 'client/build')));
+  // following two are working the same way
+  // app.use('', express.static(path.join(__dirname,'client/build')));
+  // app.use('/', express.static(path.join(__dirname,'client/build')));
+
+  app.get('*', (req, res) => {
+    res.sendFile(path.resolve(__dirname, 'client', 'build', 'index.html'));
+  });
+}
 
 // Get mongo DB URI from configuration
 const dbURI = require('./config/keys').mongoURI;
