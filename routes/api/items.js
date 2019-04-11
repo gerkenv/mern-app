@@ -12,7 +12,10 @@ const Item = require('../../models/Item');
 router.get('/', (req, res) => {
   Item.find()           // get all items
     .sort({ date: -1})  // sort them by date in descending order
-    .then(items => res.status(200).json(items)) // return `json` response
+    // return `json` response
+    .then(items => res.status(200).json(items))
+    // send an error
+    .catch(err => res.status(500).json(err));
 });
 
 // @route  POST api/items
@@ -25,7 +28,9 @@ router.post('/', (req, res) => {
   });
   // store an item into database
   newItem.save()
+    // return `json` response
     .then(item => res.status(201).json(item))
+    // send an error
     .catch(err => res.status(500).json(err));
 });
 
@@ -37,10 +42,13 @@ router.delete('/:id', (req, res) => {
   Item.findOneAndDelete({"_id": req.params.id})
     .then((item) => {
       if (!item) {
+        // send an error
         return res.status(404).send(item);
       } else {
+        // return `json` response
         return res.status(200).send(item);
       }
+    // send an error
     }).catch(err => res.status(500).json(err));
 });
 

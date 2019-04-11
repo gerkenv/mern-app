@@ -9,16 +9,18 @@ export const getItems = () => dispatch => {
   dispatch(setItemsLoading());
   // send request to server to get all items
   // we can use links without `host` name because we set `proxy` to `host` in our `package.json`
-  axios.get('/api/items').then(res => {
-    console.log({res});
-    // dispatch (emit) an action (an event)
-    dispatch({
-      type: GET_ITEMS,
-      payload: {
-        items: res.data
-      }
-    })
-  });
+  axios.get('/api/items')
+    .then(res => {
+      // dispatch (emit) an action (an event)
+      dispatch({
+        type: GET_ITEMS,
+        payload: {
+          items: res.data
+        }
+      })
+    }).catch(err => {
+      console.error(err.message + " (" + err.response.data + ")");
+    });
 }
 
 export const deleteItem = (id) => (dispatch) => {
@@ -32,6 +34,8 @@ export const deleteItem = (id) => (dispatch) => {
         id
       }
     })
+  }).catch(err => {
+    console.error(err.message + " (" + err.response.data + ")");
   });
 }
 
@@ -46,6 +50,8 @@ export const addItem = (item) => (dispatch) => {
         item: res.data
       }
     })
+  }).catch(err => {
+    console.error(err.message + " (" + err.response.data + ")");
   });
 }
 
