@@ -209,7 +209,7 @@ axios.get('http://localhost:5000/api/items);
 ```
 It's fine but we can avoid this form by setting a proxz in `package.json`:
 ```json
-"proxy": "http>//localhost:5000"
+"proxy": "http://localhost:5000"
 ```
 Then we can get the same request with
 ```js
