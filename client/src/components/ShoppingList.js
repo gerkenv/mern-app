@@ -48,7 +48,10 @@ ShoppingList.propTypes = {
   item: PropTypes.object.isRequired
 }
 
-// `state` argument here is a complete store. In this component we need only a slice of it. Single property called `item`.
+// `state` argument here is a complete store. In this component we need
+// only a slice of it. Single property called `item`.
+// So function below maps a part of a state to a props of `this` component,
+// thus we can access `store.item` through `this.props.item`.
 const mapStateToProps = (state) => {
   // console.log({completeStore: state})
   return ({
@@ -56,6 +59,7 @@ const mapStateToProps = (state) => {
   })
 };
 
+// Instead of exporting a class as usually we have to change it using `mapStateToProps` and bind it to some actions.
 export default connect(
   mapStateToProps,
   {
